@@ -60,11 +60,18 @@ class CarMarker {
     this.animatedMarker.resetIcon();
   }
 
+
+  cleanup() {
+    this.map.removeLayer(this.realRouteLine);
+    this.map.removeLayer(this.decorator);
+    this.map.removeLayer(this.animatedMarker);
+  }
+
 };
 
 
 
-var car_list = {}
+var car_list = {};
 function update_new_pos(car_id, lat, lng, creator) {
   var car;
   if (car_id in car_list) {
@@ -96,4 +103,15 @@ function update_icon_size(width, height) {
     var car = car_list[car_id];
     car.set_icon_size(width, height);
   }
+}
+
+
+function remove_all_car_markers() {
+
+  for (var car_id in car_list) {
+    var car = car_list[car_id];
+    car.cleanup();
+  }
+  car_list = {};
+
 }

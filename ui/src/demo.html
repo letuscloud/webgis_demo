@@ -35,18 +35,32 @@
             z-index: 999;
             color: #ffffff;
             background-color: rgba(0, 168, 0, 1);
+
         }
+
+        .menuBar label {
+            margin-Left: 15px
+        }
+
+
     </style>
 </head>
 
 <body>
     <div class="map" id="map"></div>
     <div class="menuBar">
-        <input type="button" value="开始" onclick="startClick()" />
-        <input type="button" value="暂停" onclick="pauseClick()" />
-        <input type="button" value="加速" onclick="speetUp()" />
-        <input type="button" value="减速" onclick="speetDown()" />
-        <input type="button" value="停止" onclick="stopClick()" />
+        <input type="button" value="reset" onclick="onRestartClick()" />
+        <input type="button" value="stop" onclick="onStopClick()" />
+
+
+        <label>Car Numbers:</label>
+        <select id="car_num" onchange="handleCarNumberSelectChange(event)">
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="5" selected="selected" >5</option>
+            <option value="10">10</option>
+            <option value="100">100</option>
+        </select>
 
 
         <label>Route Color:</label>
@@ -83,6 +97,32 @@
 
     var init_icon_width = 37;
     var init_icon_height = 26;
+    var pull_cnt = 5;
+
+    function onRestartClick() {
+
+        stop_ws_session();
+        remove_all_car_markers();
+
+        start_new_ws_session(pull_cnt);
+    };
+
+
+    function onStopClick() {
+        stop_ws_session();
+    };
+
+
+
+    function handleCarNumberSelectChange(event) {
+
+        var selectElement = event.target;
+        pull_cnt = Number(selectElement.value);
+
+        stop_ws_session();
+        remove_all_car_markers();
+        start_new_ws_session(pull_cnt);
+};
 
     function handleLineColorSelectChange(event) {
 
@@ -110,13 +150,14 @@
     };
 
 
-
-
     var map = L.map('map', {
         center: [22.548334842855944, 114.0608463257408],
-        zoom: 14,
+        zoom: 13,
         preferCanvas: true
     });
+
+
+
 
     var tiles = L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png').addTo(map);
 
@@ -127,35 +168,42 @@
     })
    
 
-// Create WebSocket connection.
-const socket = new WebSocket("ws://192.168.1.100:8080/pull");
 
-// Connection opened
-socket.addEventListener("open", (event) => {
-  socket.send("Hello Server!");
-});
+    var ws_socket;
 
-// Listen for messages
-socket.addEventListener("message", (event) => {
+    function start_new_ws_session(car_number) {
+        var ws_endpoint = "ws://192.168.1.100:8080/pull"
+        ws_socket = new WebSocket(`${ws_endpoint}?cnt=${car_number}`);
 
-    var x = JSON.parse(event.data);
-    
-    for (let i = 0; i < x.length; i++) {
-
-
-        var j = x[i];
-        var car_id = j[0]
-        var lat = j[1];
-        var lng = j[2];
-
-        update_new_pos(car_id, lat, lng, () => {
-            return new CarMarker(map, carIcon);
+        ws_socket.addEventListener("open", (event) => {
+            ws_socket.send("hello");
         });
-    }
-    // console.log("recv", event.data);
 
-});
+        ws_socket.addEventListener("message", (event) => {
 
+            var msg = JSON.parse(event.data);
+            
+            for (let i = 0; i < msg.length; i++) {
+
+                var gps = msg[i];
+                var car_id = gps[0]
+                var lat = gps[1];
+                var lng = gps[2];
+
+                update_new_pos(car_id, lat, lng, () => {
+                    return new CarMarker(map, carIcon);
+                });
+            }
+            // console.log("recv", event.data);
+
+        });
+    };
+
+    function stop_ws_session() {
+        ws_socket.close();
+    };
+
+    start_new_ws_session(pull_cnt);
 
 </script>
 
