@@ -1,0 +1,15 @@
+version: '3.0'
+services:
+
+    webgis_demo_app:
+        restart: always
+        image: webgis_demo
+
+        build:
+            context: ../
+            dockerfile: docker/Dockerfile
+
+
+        container_name: webgis_demo_app
+        ports:
+            - "8081:8080"

@@ -10,6 +10,7 @@ ws = Blueprint('panda', __name__, url_prefix="/")
 
 ws_connection = {}
 
+
 def gen_connection_id():
     connection_id = random.randint(1, sys.maxsize )
     return str(connection_id)

@@ -11,7 +11,7 @@
     <!-- 引入插件 -->
     <script src="../lib/leaflet/plugins/leaflet.polylineDecorator.js"></script>
     <script src="../lib/leaflet/plugins/Leaflet.AnimatedMarker.js"></script>
-    <script src="./demo.js"></script>
+    <script src="../lib/demo.js"></script>
 
     <style>
         body {
@@ -171,8 +171,16 @@
 
     var ws_socket;
 
+    function gen_ws_endpoint() {
+        var ws_endpoint = `ws://${window.location.hostname}:${window.location.port}/pull`
+
+        return ws_endpoint
+    };
+
     function start_new_ws_session(car_number) {
+
         var ws_endpoint = "ws://192.168.1.100:8080/pull"
+        var ws_endpoint = gen_ws_endpoint();
         ws_socket = new WebSocket(`${ws_endpoint}?cnt=${car_number}`);
 
         ws_socket.addEventListener("open", (event) => {
