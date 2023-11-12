@@ -4,7 +4,7 @@ FROM python:3.8-slim
 ADD ./server /home/server
 WORKDIR /home/server
 
-RUN pip3 install -r requirements.txt -i http://mirrors.aliyun.com/pypi/simple/
+RUN pip3 install -r requirements.txt -i http://mirrors.aliyun.com/pypi/simple/ --trusted-host mirrors.aliyun.com
 
 ADD ./ui /home/ui
 
