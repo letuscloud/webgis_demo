@@ -58,7 +58,7 @@ L.AnimatedMarker = L.Marker.extend({
                     // v.div.style.transition = 'transform linear ' + _speed
                 }
 
-                v.div.style.transform = `translate3d(-${iconOption.iconSize[0]/2}px, -${iconOption.iconSize[1]}px, 0) rotate(-' + ${deg} + 'deg)`;
+                v.div.style.transform = `translate3d(-${iconOption.iconSize[0]/2}px, -${iconOption.iconSize[1]/2}px, 0) rotate(-${deg}deg)`;
                 v.before = deg
             },
 
