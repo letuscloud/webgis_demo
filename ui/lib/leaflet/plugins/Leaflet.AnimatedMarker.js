@@ -12,17 +12,21 @@ L.AnimatedMarker = L.Marker.extend({
         playCall: null
     },
 
-    initialize: function(latlngs, options) {
+    initialize: function(options) {
         Object.assign(this.options, options);
         this.isZooming = false;
-        L.Marker.prototype.initialize.call(this, latlngs[0], options);
-        this.setLine(latlngs);
+
+        var last = {lat:0, lng:0};
+        L.Marker.prototype.initialize.call(this, last, options);
+
+        this.lastlat = 0;
+        this.lastlng = 0;
         this.resetIcon()
     },
 
     resetIcon: function() {
         const v = this
-        var iconOption = v.options.icon.options
+        var iconOption = v.options.iconOptions.options;
         var Icon = L.DivIcon.extend({
             createIcon: function() {
                 // outerDiv.style.transform is updated by Leaflet
@@ -35,11 +39,12 @@ L.AnimatedMarker = L.Marker.extend({
                 v.div.style.height = iconOption.iconSize[1] + "px"
                 v.div.style.transition = 'transform linear 100ms'
                 v.div.style.transformOrigin = 'center'
-                v.div.style.transform = 'translate3d(-' + iconOption.iconAnchor[0] + 'px, -' + iconOption.iconAnchor[0] + 'px, 0) rotate(-' + v._latlngs[0].bearing + 'deg)';
+                v.div.style.transform = 'translate3d(-' + iconOption.iconSize[0]/2 + 'px, -' + iconOption.iconSize[1]/2 + 'px, 0) rotate(-' + '1' + 'deg)';
                 const img = document.createElement('img');
                 img.src = iconOption.iconUrl;
                 img.width = iconOption.iconSize[0];
                 img.height = iconOption.iconSize[1];
+
                 v.div.appendChild(img);
                 outerDiv.appendChild(v.div);
                 return outerDiv;
@@ -52,12 +57,14 @@ L.AnimatedMarker = L.Marker.extend({
                     // var _speed = 100 / v.options.speetX + 'ms'
                     // v.div.style.transition = 'transform linear ' + _speed
                 }
-                v.div.style.transform = 'translate3d(-19px, -13px, 0) rotate(-' + deg + 'deg)';
+
+                v.div.style.transform = `translate3d(-${iconOption.iconSize[0]/2}px, -${iconOption.iconSize[1]}px, 0) rotate(-' + ${deg} + 'deg)`;
                 v.before = deg
             },
+
             iconSize: iconOption.iconSize,
         })
-        this.icon = new Icon()
+        this.icon = new Icon();
         this.setIcon(this.icon)
     },
 
@@ -98,7 +105,7 @@ L.AnimatedMarker = L.Marker.extend({
 
     onAdd: function(map) {
         L.Marker.prototype.onAdd.call(this, map);
-        this.animate()
+        // this.animate()
         this.map = map;
         const _this = this
         map.addEventListener('zoomstart', function() {
@@ -112,6 +119,18 @@ L.AnimatedMarker = L.Marker.extend({
         if (this.options.autoStart) {
             this.start();
         }
+    },
+
+    update_pos: function(lat, lng) {
+        var last = {lat:this.lastlat, lng:this.lastlng};
+        var cur = {lat, lng};
+        this.setLatLng(cur);
+
+        var rot = this.getRotation(last, cur)
+        this.icon.rotate(rot);
+
+        this.lastlat = lat;
+        this.lastlng = lng;
     },
 
     animate: function() {
@@ -181,7 +200,7 @@ L.AnimatedMarker = L.Marker.extend({
             this.startedAt = this.startedAt - this.playedTime
             this.isPause = false
         }
-        this.animate()
+        // this.animate()
     },
 
     pause: function() {
@@ -234,6 +253,6 @@ L.AnimatedMarker = L.Marker.extend({
 
 });
 
-L.animatedMarker = function(latlngs, options) {
-    return new L.AnimatedMarker(latlngs, options);
+L.animatedMarker = function( options) {
+    return new L.AnimatedMarker(options);
 };

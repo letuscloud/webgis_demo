@@ -59,8 +59,8 @@ def thread_function(ws_session):
         payload = []
         for car_id in car_ids:
             pos = get_gps_pos(car_id, i)
-
-            payload.append([car_id, pos[0], pos[1]])
+            if pos:
+                payload.append([car_id, pos[0], pos[1]])
 
         msg = json.dumps(payload)
 
